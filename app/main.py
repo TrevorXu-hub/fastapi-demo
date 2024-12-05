@@ -1,13 +1,18 @@
 #!/usr/bin/env python3
-
-from fastapi import FastAPI
-from fastapi.middleware.cors import CORSMiddleware
+import os
 import mysql.connector
 from mysql.connector import Error
-import os
+from fastapi import FastAPI, HTTPException
+
+DBHOST = 'ds2022.cqee4iwdcaph.us-east-1.rds.amazonaws.com'
+DBUSER = 'admin'
+DBPASS = os.getenv('DBPASS')
+DB = 'pxg6af'
+db = mysql.connector.connect(user=DBUSER, host=DBHOST, password=DBPASS, database=DB)
+cur=db.cursor()
 
 app = FastAPI()
-
+from fastapi.middleware.cors import CORSMiddleware
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -15,37 +20,37 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-DBHOST = "ds2022.cqee4iwdcaph.us-east-1.rds.amazonaws.com"
-DBUSER = "admin"
-DBPASS = os.getenv('DBPASS')
-DB = "pxg6af"  # Replace with your actual database name
-
-try:
-    db = mysql.connector.connect(user=DBUSER, host=DBHOST, password=DBPASS, database=DB)
-    cur = db.cursor()
-except Error as e:
-    print("Error connecting to database:", e)
-
 @app.get('/genres')
 def get_genres():
     query = "SELECT * FROM genres ORDER BY genreid;"
-    try:
+    try:    
         cur.execute(query)
-        headers = [x[0] for x in cur.description]
+        headers=[x[0] for x in cur.description]
         results = cur.fetchall()
-        json_data = [dict(zip(headers, result)) for result in results]
-        return json_data
+        json_data=[]
+        for result in results:
+            json_data.append(dict(zip(headers,result)))
+        return(json_data)
     except Error as e:
         return {"Error": "MySQL Error: " + str(e)}
 
-# 定义 /songs 路由
 @app.get('/songs')
 def get_songs():
     query = """
-    SELECT songs.title, songs.album, songs.artist, songs.year, songs.file, songs.image, songs.genre
-    FROM songs
-    JOIN genres ON songs.genre = genres.genreid
-    ORDER BY songs.id;
+    SELECT 
+        songs.title AS title, 
+        songs.album AS album, 
+        songs.artist AS artist, 
+        songs.year AS year, 
+        songs.file AS file, 
+        songs.image AS image,
+        genres.genre AS genre
+    FROM 
+        songs
+    JOIN 
+        genres ON songs.genre = genres.genreid
+    ORDER BY
+        songs.title;
     """
     try:
         cur.execute(query)
