@@ -1,0 +1,23 @@
+{
+  "resources": [
+    {
+      "name": "default-role",
+      "resource_type": "iam_role",
+      "role_arn": "arn:aws:iam::050752637830:role/chalice-demo-dev",
+      "role_name": "chalice-demo-dev"
+    },
+    {
+      "name": "s3_handler",
+      "resource_type": "lambda_function",
+      "lambda_arn": "arn:aws:lambda:us-east-1:050752637830:function:chalice-demo-dev-s3_handler"
+    },
+    {
+      "name": "s3_handler-s3event",
+      "resource_type": "s3_event",
+      "bucket": "pxg6af-dp1-spotify",
+      "lambda_arn": "arn:aws:lambda:us-east-1:050752637830:function:chalice-demo-dev-s3_handler"
+    }
+  ],
+  "schema_version": "2.0",
+  "backend": "api"
+}
